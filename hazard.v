@@ -13,12 +13,14 @@ module hazard(
   reg state, next_state;
     
   ///registers to store the output values
-  reg ID_Write, nop_mux;
+  reg ID_Write_reg, nop_mux_reg;
+  assign ID_Write = ID_Write_reg;
+  assign nop_mux = nop_mux_reg;
   
   ///isolate the relevant components of the instruction in the ID stage
   wire [4:0] ID_rs, ID_rt;
-  assign ID_rs = ID_instr[25:21];
-  assign ID_rt = ID_instr[20:16];
+  assign ID_rs = ID_Instr[25:21];
+  assign ID_rt = ID_Instr[20:16];
   
   //check for stall condition
   wire data_stall;
@@ -39,7 +41,7 @@ module hazard(
         end else begin
           next_state = WATCHING;
         end
-      default:
+      default: begin
         next_state = WATCHING;
       end
     endcase
@@ -59,24 +61,25 @@ module hazard(
   always @ (posedge clk)
   begin
     if (reset) begin
-      ID_Write = 1'b1;
-      nop_mux = 1'b0;
-    end else begin
+      ID_Write_reg = 1'b1;
+      nop_mux_reg = 1'b0;
+    end 
+    else begin
       case (state)
         WATCHING: begin
-          ID_Write = 1'b1;
-          nop_mux = 1'b0;
+          ID_Write_reg = 1'b1;
+          nop_mux_reg = 1'b0;
         end
         STALL: begin
-          ID_Write = 1'b0;
-          nop_mux = 1'b1;
+          ID_Write_reg = 1'b0;
+          nop_mux_reg = 1'b1;
         end
         default: begin
-          ID_Write = 1'b1;
-          nop_mux = 1'b0;
+          ID_Write_reg = 1'b1;
+          nop_mux_reg = 1'b0;
         end
       endcase
     end
-    
-  endmodule
+  end
+endmodule
       
