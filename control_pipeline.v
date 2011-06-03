@@ -37,33 +37,33 @@ module control_pipeline(opcode, RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, Mem
           R_FORMAT : 
           begin
               RegDst=1'b1; ALUSrc=1'b0; MemtoReg=1'b0; RegWrite=1'b1; MemRead=1'b0; 
-              MemWrite=1'b0; Branch=1'b0; ALUOp = 2'b10;
+              MemWrite=1'b0; Branch=1'b0; ALUOp = 2'b10; Jump = 1'b0;
           end
           LW :
           begin
               RegDst=1'b0; ALUSrc=1'b1; MemtoReg=1'b1; RegWrite=1'b1; MemRead=1'b1; 
-              MemWrite=1'b0; Branch=1'b0; ALUOp = 2'b00;
+              MemWrite=1'b0; Branch=1'b0; ALUOp = 2'b00; Jump = 1'b0;
           end
           SW :
           begin
               RegDst=1'bx; ALUSrc=1'b1; MemtoReg=1'bx; RegWrite=1'b0; MemRead=1'b0; 
-              MemWrite=1'b1; Branch=1'b0; ALUOp = 2'b00;
+              MemWrite=1'b1; Branch=1'b0; ALUOp = 2'b00; Jump = 1'b0;
           end
           BEQ :
           begin
               RegDst=1'bx; ALUSrc=1'b0; MemtoReg=1'bx; RegWrite=1'b0; MemRead=1'b0; 
-              MemWrite=1'b0; Branch=1'b1; ALUOp = 2'b01;
+              MemWrite=1'b0; Branch=1'b1; ALUOp = 2'b01; Jump = 1'b0;
           end
           J :
           begin
               RegDst=1'bx; ALUSrc=1'bx; MemtoReg=1'bx; RegWrite=1'b0; MemRead=1'bx; 
-              MemWrite=1'b0; Branch=1'bx; ALUOp = 2'bxx; Jump = 1'b1; BranchNE=1'b0;
+              MemWrite=1'b0; Branch=1'bx; ALUOp = 2'bxx; Jump = 1'b1;
           end
           default
           begin
               $display("control_single unimplemented opcode %d", opcode);
               RegDst=1'b0; ALUSrc=1'b0; MemtoReg=1'b0; RegWrite=1'b0; MemRead=1'b0; 
-              MemWrite=1'b0; Branch=1'b0; ALUOp = 2'b00;
+              MemWrite=1'b0; Branch=1'b0; ALUOp = 2'b00; Jump = 1'b0;
           end
         endcase
     end

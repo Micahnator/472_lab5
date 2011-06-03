@@ -101,9 +101,11 @@ input clk, reset;
 
 	mux2 #(32)	IF_JUMPMUX(Jump, IF_pc4, jump_addr, IF_jump_pc);  ///JUMP Mux
 	
-	control_pipeline CTL(.opcode(opcode), .RegDst(RegDst), .ALUSrc(ALUSrc), .MemtoReg(MemtoReg), 
-                       .RegWrite(RegWrite), .MemRead(MemRead), .MemWrite(MemWrite), .Branch(Branch), 
-                       .ALUOp(ALUOp), .Jump(Jump)); /// added Jump to control signals
+	
+	///Do I need this?
+	///control_pipeline CTL(.opcode(opcode), .RegDst(RegDst), .ALUSrc(ALUSrc), .MemtoReg(MemtoReg), 
+       ///                .RegWrite(RegWrite), .MemRead(MemRead), .MemWrite(MemWrite), .Branch(Branch), 
+          ///             .ALUOp(ALUOp), .Jump(Jump)); /// added Jump to control signals
 
 
     mux2 #(32)	IF_PCMUX(MEM_PCSrc, IF_pc4, MEM_btgt, IF_pc_next);
