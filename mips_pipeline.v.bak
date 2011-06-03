@@ -179,7 +179,7 @@ input clk, reset;
             EX_extend   <= ID_extend;
             EX_rs       <= ID_rs;
             EX_rt       <= ID_rt;
-            EX_rt2      <= ID_rt;
+            EX_rt2      <= ID_rt
             EX_rd       <= ID_rd;
         end
     end
