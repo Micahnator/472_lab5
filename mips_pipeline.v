@@ -28,7 +28,13 @@ input clk, reset;
     // IF Signal Declarations
     
     wire [31:0] IF_instr, IF_pc, IF_pc_next, IF_pc4;
-
+    wire [31:0] jump_addr; ///JUMP wires
+    wire [31:0] IF_jump_pc; ///JUMP wires
+    assign jump_addr [31:28] = ID_pc4 [31:28]; ///JUMP assign
+    assign jump_addr [27:2] = ID_instr [25:0]; ///JUMP assign
+    assign jump_addr [1:0] = 2'b00; ///JUMP assign
+    
+    
     // ID Signal Declarations
 
     reg [31:0] ID_instr, ID_pc4;  // pipeline register values from EX
@@ -93,6 +99,13 @@ input clk, reset;
 
     add32 		IF_PCADD(IF_pc, 32'd4, IF_pc4);
 
+	mux2 #(32)	IF_JUMPMUX(Jump, IF_pc4, jump_addr, IF_jump_pc);  ///JUMP Mux
+	
+	control_pipeline CTL(.opcode(opcode), .RegDst(RegDst), .ALUSrc(ALUSrc), .MemtoReg(MemtoReg), 
+                       .RegWrite(RegWrite), .MemRead(MemRead), .MemWrite(MemWrite), .Branch(Branch), 
+                       .ALUOp(ALUOp), .Jump(Jump)); /// added Jump to control signals
+
+
     mux2 #(32)	IF_PCMUX(MEM_PCSrc, IF_pc4, MEM_btgt, IF_pc_next);
 
     rom32 		IMEM(IF_pc, IF_instr);
@@ -105,8 +118,11 @@ input clk, reset;
             ID_pc4   <= 0;
         end
         else begin
-            ID_instr <= IF_instr;
-            ID_pc4   <= IF_pc4;
+        	if (Jump) ///JUMP Case added
+        		ID_instr <= 0;
+        	else
+            	ID_instr <= IF_instr;
+            	ID_pc4   <= IF_pc4;
         end
     end
 

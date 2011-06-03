@@ -18,17 +18,18 @@
 //
 //-----------------------------------------------------------------------------
 
-module control_pipeline(opcode, RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch, ALUOp);
+module control_pipeline(opcode, RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch, ALUOp, Jump); ///Added Jump
     input [5:0] opcode;
-    output RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch;
+    output RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch, Jump; ///Added Jump
     output [1:0] ALUOp;
-    reg    RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch;
+    reg    RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, MemWrite, Branch, Jump; ///Added Jump
     reg    [1:0] ALUOp;
 
     parameter R_FORMAT = 6'd0;
     parameter LW = 6'd35;
     parameter SW = 6'd43;
     parameter BEQ = 6'd4;
+    parameter J = 6'd2; ///Jump opcode
 
     always @(opcode)
     begin
@@ -52,6 +53,11 @@ module control_pipeline(opcode, RegDst, ALUSrc, MemtoReg, RegWrite, MemRead, Mem
           begin
               RegDst=1'bx; ALUSrc=1'b0; MemtoReg=1'bx; RegWrite=1'b0; MemRead=1'b0; 
               MemWrite=1'b0; Branch=1'b1; ALUOp = 2'b01;
+          end
+          J :
+          begin
+              RegDst=1'bx; ALUSrc=1'bx; MemtoReg=1'bx; RegWrite=1'b0; MemRead=1'bx; 
+              MemWrite=1'b0; Branch=1'bx; ALUOp = 2'bxx; Jump = 1'b1; BranchNE=1'b0;
           end
           default
           begin
