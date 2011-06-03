@@ -30,9 +30,6 @@ input clk, reset;
     wire [31:0] IF_instr, IF_pc, IF_pc_next, IF_pc4;
     wire [31:0] jump_addr; ///JUMP wires
     wire [31:0] IF_jump_pc; ///JUMP wires
-    assign jump_addr [31:28] = ID_pc4 [31:28]; ///JUMP assign
-    assign jump_addr [27:2] = ID_instr [25:0]; ///JUMP assign
-    assign jump_addr [1:0] = 2'b00; ///JUMP assign
     
     
     // ID Signal Declarations
@@ -43,6 +40,10 @@ input clk, reset;
     wire [4:0] ID_rs, ID_rt, ID_rd;
     wire [15:0] ID_immed;
     wire [31:0] ID_extend, ID_rd1, ID_rd2;
+    
+    assign jump_addr [31:28] = ID_pc4 [31:28]; ///JUMP assign
+    assign jump_addr [27:2] = ID_instr [25:0]; ///JUMP assign
+    assign jump_addr [1:0] = 2'b00; ///JUMP assign
 
     assign ID_op = ID_instr[31:26];
     assign ID_rs = ID_instr[25:21];
@@ -99,16 +100,10 @@ input clk, reset;
 
     add32 		IF_PCADD(IF_pc, 32'd4, IF_pc4);
 
-	mux2 #(32)	IF_JUMPMUX(Jump, IF_pc4, jump_addr, IF_jump_pc);  ///JUMP Mux
-	
-	
-	///Do I need this?
-	///control_pipeline CTL(.opcode(opcode), .RegDst(RegDst), .ALUSrc(ALUSrc), .MemtoReg(MemtoReg), 
-       ///                .RegWrite(RegWrite), .MemRead(MemRead), .MemWrite(MemWrite), .Branch(Branch), 
-          ///             .ALUOp(ALUOp), .Jump(Jump)); /// added Jump to control signals
+	  mux2 #(32)	IF_JUMPMUX(Jump, IF_pc4, jump_addr, IF_jump_pc);  ///JUMP Mux
 
 
-    mux2 #(32)	IF_PCMUX(MEM_PCSrc, IF_pc4, MEM_btgt, IF_pc_next);
+    mux2 #(32)	IF_PCMUX(MEM_PCSrc, IF_jump_pc, MEM_btgt, IF_pc_next);
 
     rom32 		IMEM(IF_pc, IF_instr);
 
@@ -141,7 +136,7 @@ input clk, reset;
                        .ALUSrc(ID_ALUSrc), .MemtoReg(ID_MemtoReg), 
                        .RegWrite(ID_RegWrite), .MemRead(ID_MemRead),
                        .MemWrite(ID_MemWrite), .Branch(ID_Branch), 
-                       .ALUOp(ID_ALUOp));
+                       .ALUOp(ID_ALUOp), .Jump(Jump));
 
 
     always @(posedge clk)		    // ID/EX Pipeline Register
