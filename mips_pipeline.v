@@ -32,7 +32,10 @@ input clk, reset;
     // IF Signal Declarations
     
     wire [31:0] IF_instr, IF_pc, IF_pc_next, IF_pc4;
-
+    wire [31:0] jump_addr; ///JUMP wires
+    wire [31:0] IF_jump_pc; ///JUMP wires
+    
+    
     // ID Signal Declarations
 
     reg [31:0] ID_instr, ID_pc4;  // pipeline register values from EX
@@ -41,6 +44,10 @@ input clk, reset;
     wire [4:0] ID_rs, ID_rt, ID_rd;
     wire [15:0] ID_immed;
     wire [31:0] ID_extend, ID_rd1, ID_rd2;
+    
+    assign jump_addr [31:28] = ID_pc4 [31:28]; ///JUMP assign
+    assign jump_addr [27:2] = ID_instr [25:0]; ///JUMP assign
+    assign jump_addr [1:0] = 2'b00; ///JUMP assign
 
     assign ID_op = ID_instr[31:26];
     assign ID_rs = ID_instr[25:21];
@@ -132,7 +139,10 @@ input clk, reset;
 
     add32 		IF_PCADD(IF_pc, 32'd4, IF_pc4);
 
-    mux2 #(32)	IF_PCMUX(MEM_PCSrc, IF_pc4, MEM_btgt, IF_pc_next);
+	  mux2 #(32)	IF_JUMPMUX(Jump, IF_pc4, jump_addr, IF_jump_pc);  ///JUMP Mux
+
+
+    mux2 #(32)	IF_PCMUX(MEM_PCSrc, IF_jump_pc, MEM_btgt, IF_pc_next);
 
     rom32 		IMEM(IF_pc, IF_instr);
 
@@ -142,12 +152,15 @@ input clk, reset;
         begin
             ID_instr <= 0;
             ID_pc4   <= 0;
-        end else if (ID_Write == 0) begin ///handle hazard stall conditions
-            ID_instr <= ID_instr;
-            ID_pc4   <= ID_pc4;
+        end
+        else if (Jump) begin ///JUMP Case added
+        		ID_instr <= 0;
+		end else if (ID_Write == 0) begin ///handle hazard stall conditions
+            	ID_instr <= ID_instr;
+            	ID_pc4   <= ID_pc4;
         end else begin
-            ID_instr <= IF_instr;
-            ID_pc4   <= IF_pc4;
+            	ID_instr <= IF_instr;
+            	ID_pc4   <= IF_pc4;
         end
     end
 
@@ -164,7 +177,8 @@ input clk, reset;
                        .ALUSrc(ID_ALUSrc), .MemtoReg(ID_MemtoReg), 
                        .RegWrite(ID_RegWrite), .MemRead(ID_MemRead),
                        .MemWrite(ID_MemWrite), .Branch(ID_Branch), 
-                       .ALUOp(ID_ALUOp));
+                       .ALUOp(ID_ALUOp), .Jump(Jump));
+                      
                        
     /// Hazard Detection Mux
     mux2 #(9)	HAZ_MUX(stall, control_bus_to_mux, zero_reg_9, control_bus_out_of_mux);
@@ -177,7 +191,7 @@ input clk, reset;
         if (reset)
         begin
             EX_RegDst   <= 0;
-	          EX_ALUOp    <= 0;
+	        EX_ALUOp    <= 0;
             EX_ALUSrc   <= 0;
             EX_Branch   <= 0;
             EX_MemRead  <= 0;
@@ -192,7 +206,7 @@ input clk, reset;
         end
         else if (ID_Write == 0) begin
             EX_RegDst   <= 0;
-	          EX_ALUOp    <= 0;
+	        EX_ALUOp    <= 0;
             EX_ALUSrc   <= 0;
             EX_Branch   <= 0;
             EX_MemRead  <= 0;
