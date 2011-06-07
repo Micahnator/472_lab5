@@ -14,7 +14,7 @@
 //   3rd ed." by David Patterson & John Hennessey, Morgan Kaufmann, 2004 (COD3e).  
 //
 //-----------------------------------------------------------------------------
-
+/// This Module has been updated to have a "gate" input that gates the updating of the register
 module reg32 (clk, reset, d_in, d_out, gate);
     input       	clk, reset;
     input	[31:0]	d_in;
@@ -28,7 +28,7 @@ module reg32 (clk, reset, d_in, d_out, gate);
           d_out <= 0;
         end
         else if (!gate) begin
-          //do nothing, just hold
+          ///do nothing, just hold
         end  
         else begin
           d_out <= d_in;

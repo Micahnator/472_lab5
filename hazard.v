@@ -1,3 +1,4 @@
+/// This module is used for detecting data hazards and creating a once cycle stall signal
 module hazard(
   input clk,
   input reset,
@@ -6,11 +7,6 @@ module hazard(
   input EX_MemRead,
   output ID_Write,
   output nop_mux);
-  
-  ///parameters
-  ///parameter WATCHING=1'b0, STALL=1'b1;
-  ///state registers
-  ///reg state, next_state;
     
   ///registers to store the output values
   reg ID_Write_reg, nop_mux_reg;
@@ -26,6 +22,7 @@ module hazard(
   wire data_stall;
   assign data_stall = (EX_MemRead && ((EX_rt == ID_rs) || (EX_rt == ID_rt)));
   
+  /// Generate control signals based on the data_stall signal
   always @ (data_stall)
   begin
     if (data_stall) begin

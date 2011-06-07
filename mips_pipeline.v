@@ -18,6 +18,10 @@
 //
 //-----------------------------------------------------------------------------
 
+///Note: All comments with 3 /'s are from Micah Losli, Joel Lonbeck, and Andy
+///Johnson, the team that made improvements to the initial code to enable
+///hazard detection, forwarding, and jump instructions respectively.
+
 module mips_pipeline(clk, reset);
 input clk, reset;
 
@@ -180,18 +184,8 @@ input clk, reset;
             EX_MemWrite <= 0;
             EX_RegWrite <= 0;
             EX_MemtoReg <= 0;
-            //EX_RegDst   <= 0;
-            //EX_ALUOp    <= 0;
-            //EX_ALUSrc   <= 0;
-            //EX_Branch   <= 0;
-            //EX_MemRead  <= 0;
-            //EX_MemWrite <= 0;
-            //EX_RegWrite <= 0;
-            //EX_MemtoReg <= 0;
 
             EX_pc4      <= 0;
-            EX_rd1      <= 0;
-            EX_rd2      <= 0;
             EX_extend   <= 0;
             EX_rt       <= 0;
             EX_rd       <= 0;
@@ -207,8 +201,6 @@ input clk, reset;
             EX_MemtoReg <= 0;
             
             EX_pc4      <= ID_pc4;
-            EX_rd1      <= ID_rd1;
-            EX_rd2      <= ID_rd2;
             EX_extend   <= ID_extend;
             EX_rt       <= ID_rt;
             EX_rd       <= ID_rd;
@@ -222,21 +214,25 @@ input clk, reset;
             EX_MemWrite <= ID_MemWrite_2;
             EX_RegWrite <= ID_RegWrite_2;
             EX_MemtoReg <= ID_MemtoReg_2;
-            //EX_RegDst   <= ID_RegDst;
-            //EX_ALUOp    <= ID_ALUOp;
-            //EX_ALUSrc   <= ID_ALUSrc;
-            //EX_Branch   <= ID_Branch;
-            //EX_MemRead  <= ID_MemRead;
-            //EX_MemWrite <= ID_MemWrite;
-            //EX_RegWrite <= ID_RegWrite;
-            //EX_MemtoReg <= ID_MemtoReg;
 
             EX_pc4      <= ID_pc4;
-            EX_rd1      <= ID_rd1;
-            EX_rd2      <= ID_rd2;
             EX_extend   <= ID_extend;
             EX_rt       <= ID_rt;
             EX_rd       <= ID_rd;
+        end
+    end
+    
+    ///Read the register file on the negative edge of the clock
+    always @(negedge clk)
+    begin
+        if (reset)
+        begin
+            EX_rd1      <= 0;
+            EX_rd2      <= 0;
+        end       
+        else begin
+            EX_rd1      <= ID_rd1;
+            EX_rd2      <= ID_rd2;
         end
     end
 

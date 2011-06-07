@@ -27,7 +27,7 @@ module rom32(address, data_out);
       case (mem_offset) 
           5'd0 : data_out = { 6'd35, 5'd0, 5'd2, 16'd4 };             // lw $2, 4($0)    r2=1
           5'd1 : data_out = { 6'd35, 5'd0, 5'd3, 16'd8 };             // lw $3, 8($0)    r3=2
-          5'd2 : data_out = { 6'd35, 5'd0, 5'd4, 16'd20 };             // lw $4, 20($0)  r4=5
+          5'd2 : data_out = { 6'd35, 5'd0, 5'd4, 16'd20 };            // lw $4, 20($0)   r4=5
           5'd3 : data_out = { 6'd0, 5'd4, 5'd5, 16'd1 };              // add $5, $4, $0   r5=r4+0
           5'd4 : data_out = { 6'd0, 5'd0, 5'd0, 5'd5, 5'd0, 6'd32 };  // add $5, $0, $0  r5=0
           5'd5 : data_out = { 6'd0, 5'd5, 5'd2, 5'd5, 5'd0, 6'd32 };  // add $5, $5, $1  r5 = r6 + 1
