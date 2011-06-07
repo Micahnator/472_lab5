@@ -43,10 +43,45 @@ input clk, reset;
     assign ID_rt = ID_instr[20:16];
     assign ID_rd = ID_instr[15:11];
     assign ID_immed = ID_instr[15:0];
+    assign ID_funct = ID_instr[5:0];
 
     wire ID_RegWrite, ID_Branch, ID_RegDst, ID_MemtoReg,  // ID Control signals
          ID_MemRead, ID_MemWrite, ID_ALUSrc;
     wire [1:0] ID_ALUOp;
+    
+    wire ID_RegWrite_2, ID_Branch_2, ID_RegDst_2, ID_MemtoReg_2, ID_MemRead_2,
+        ID_MemWrite_2, ID_ALUSrc_2;     ///control signals from hazard mux to EX stage
+    wire [1:0] ID_ALUOp_2;
+        
+    ///bus of control signals that go to the hazard mux
+    wire [8:0] control_bus_to_mux;
+    assign control_bus_to_mux[0] = ID_RegWrite;
+    assign control_bus_to_mux[1] = ID_Branch;
+    assign control_bus_to_mux[2] = ID_RegDst;
+    assign control_bus_to_mux[3] = ID_MemtoReg;
+    assign control_bus_to_mux[4] = ID_MemRead;
+    assign control_bus_to_mux[5] = ID_MemWrite;
+    assign control_bus_to_mux[6] = ID_ALUSrc;
+    assign control_bus_to_mux[8:7] = ID_ALUOp[1:0];
+    ///bus of control signals coming out of the hazard mux
+    wire [8:0] control_bus_out_of_mux;
+    assign ID_RegWrite_2 = control_bus_out_of_mux[0];
+    assign ID_Branch_2 = control_bus_out_of_mux[1];
+    assign ID_RegDst_2 = control_bus_out_of_mux[2];
+    assign ID_MemtoReg_2 = control_bus_out_of_mux[3];
+    assign ID_MemRead_2 = control_bus_out_of_mux[4];
+    assign ID_MemWrite_2 = control_bus_out_of_mux[5];
+    assign ID_ALUSrc_2 = control_bus_out_of_mux[6];
+    assign ID_ALUOp_2[1:0] = control_bus_out_of_mux[8:7];
+       
+    ///The stall control signal
+    wire stall;
+    ///The ID stage register write control signal
+    wire ID_Write;
+    
+    ///The 9 bit wide zero value into the hazard mux for nops
+    wire [8:0] zero_reg_9;
+    assign zero_reg_9 = 0;
 
     // EX Signals
 
@@ -89,7 +124,7 @@ input clk, reset;
 
     // IF Hardware
 
-    reg32		IF_PC(clk, reset, IF_pc_next, IF_pc);
+    reg32		IF_PC(clk, reset, IF_pc_next, IF_pc, ID_Write);
 
     add32 		IF_PCADD(IF_pc, 32'd4, IF_pc4);
 
@@ -103,8 +138,10 @@ input clk, reset;
         begin
             ID_instr <= 0;
             ID_pc4   <= 0;
-        end
-        else begin
+        end else if (ID_Write == 0) begin ///handle hazard stall conditions
+            ID_instr <= ID_instr;
+            ID_pc4   <= ID_pc4;
+        end else begin
             ID_instr <= IF_instr;
             ID_pc4   <= IF_pc4;
         end
@@ -124,28 +161,33 @@ input clk, reset;
                        .RegWrite(ID_RegWrite), .MemRead(ID_MemRead),
                        .MemWrite(ID_MemWrite), .Branch(ID_Branch), 
                        .ALUOp(ID_ALUOp));
-
+                       
+    /// Hazard Detection Mux
+    mux2 #(9)	HAZ_MUX(stall, control_bus_to_mux, zero_reg_9, control_bus_out_of_mux);
+    
+    /// Hazard Detection Unit
+    hazard Hazard_Detector(clk, reset, ID_instr, EX_rt, EX_MemRead, ID_Write, stall);
 
     always @(posedge clk)		    // ID/EX Pipeline Register
     begin
         if (reset)
         begin
             EX_RegDst   <= 0;
-	     EX_ALUOp    <= 0;
+	          EX_ALUOp    <= 0;
             EX_ALUSrc   <= 0;
             EX_Branch   <= 0;
             EX_MemRead  <= 0;
             EX_MemWrite <= 0;
             EX_RegWrite <= 0;
             EX_MemtoReg <= 0;
-            EX_RegDst   <= 0;
-            EX_ALUOp    <= 0;
-            EX_ALUSrc   <= 0;
-            EX_Branch   <= 0;
-            EX_MemRead  <= 0;
-            EX_MemWrite <= 0;
-            EX_RegWrite <= 0;
-            EX_MemtoReg <= 0;
+            //EX_RegDst   <= 0;
+            //EX_ALUOp    <= 0;
+            //EX_ALUSrc   <= 0;
+            //EX_Branch   <= 0;
+            //EX_MemRead  <= 0;
+            //EX_MemWrite <= 0;
+            //EX_RegWrite <= 0;
+            //EX_MemtoReg <= 0;
 
             EX_pc4      <= 0;
             EX_rd1      <= 0;
@@ -154,23 +196,40 @@ input clk, reset;
             EX_rt       <= 0;
             EX_rd       <= 0;
         end
+        else if (ID_Write == 0) begin
+            EX_RegDst   <= 0;
+	          EX_ALUOp    <= 0;
+            EX_ALUSrc   <= 0;
+            EX_Branch   <= 0;
+            EX_MemRead  <= 0;
+            EX_MemWrite <= 0;
+            EX_RegWrite <= 0;
+            EX_MemtoReg <= 0;
+            
+            EX_pc4      <= ID_pc4;
+            EX_rd1      <= ID_rd1;
+            EX_rd2      <= ID_rd2;
+            EX_extend   <= ID_extend;
+            EX_rt       <= ID_rt;
+            EX_rd       <= ID_rd;
+        end        
         else begin
-            EX_RegDst   <= ID_RegDst;
-            EX_ALUOp    <= ID_ALUOp;
-            EX_ALUSrc   <= ID_ALUSrc;
-            EX_Branch   <= ID_Branch;
-            EX_MemRead  <= ID_MemRead;
-            EX_MemWrite <= ID_MemWrite;
-            EX_RegWrite <= ID_RegWrite;
-            EX_MemtoReg <= ID_MemtoReg;
-            EX_RegDst   <= ID_RegDst;
-            EX_ALUOp    <= ID_ALUOp;
-            EX_ALUSrc   <= ID_ALUSrc;
-            EX_Branch   <= ID_Branch;
-            EX_MemRead  <= ID_MemRead;
-            EX_MemWrite <= ID_MemWrite;
-            EX_RegWrite <= ID_RegWrite;
-            EX_MemtoReg <= ID_MemtoReg;
+            EX_RegDst   <= ID_RegDst_2;
+            EX_ALUOp    <= ID_ALUOp_2;
+            EX_ALUSrc   <= ID_ALUSrc_2;
+            EX_Branch   <= ID_Branch_2;
+            EX_MemRead  <= ID_MemRead_2;
+            EX_MemWrite <= ID_MemWrite_2;
+            EX_RegWrite <= ID_RegWrite_2;
+            EX_MemtoReg <= ID_MemtoReg_2;
+            //EX_RegDst   <= ID_RegDst;
+            //EX_ALUOp    <= ID_ALUOp;
+            //EX_ALUSrc   <= ID_ALUSrc;
+            //EX_Branch   <= ID_Branch;
+            //EX_MemRead  <= ID_MemRead;
+            //EX_MemWrite <= ID_MemWrite;
+            //EX_RegWrite <= ID_RegWrite;
+            //EX_MemtoReg <= ID_MemtoReg;
 
             EX_pc4      <= ID_pc4;
             EX_rd1      <= ID_rd1;
