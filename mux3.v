@@ -4,10 +4,11 @@ module mux3( sel, a, b, c, y );
     input [bitwidth-1:0] a, b, c;
     output [bitwidth-1:0] y;
     
-    wire [1:0] x;
+    wire [bitwidth-1:0] x;
     
-    mux2 #(bitwidth) M1(sel[0], a, c, x);
-    mux2 #(bitwidth) M2(sel[1], x, b, y);
+    assign y = a;
+    // mux2 #(bitwidth) M1(sel[0], a, c, x);
+    // mux2 #(bitwidth) M2(sel[1], x, b, y);
     
     // 00 = a
     // 01 = b
