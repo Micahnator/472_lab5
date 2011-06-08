@@ -97,10 +97,11 @@ input clk, reset;
     // EX Signals
 
     reg  [31:0] EX_pc4, EX_extend, EX_rd1, EX_rd2;
-    wire [31:0]  EX_offset, EX_btgt, EX_alub, EX_ALUOut;
-    reg  [4:0]  EX_rt, EX_rd;
+    wire [31:0]  EX_offset, EX_btgt, EX_alub, EX_ALUOut, EX_FWDB_MUX_out, EX_FWDA_MUX_out; /// added EX_FWDB_MUX_out, EX_FWDA_MUX_out
+    reg  [4:0]  EX_rs, EX_rt, EX_rt2, EX_rd; /// added EX_rs, EX_rt2
     wire [4:0]  EX_RegRd;
     wire [5:0] EX_funct;
+    wire [1:0] ForwardA, ForwardB; /// added both
      
     reg  EX_RegWrite, EX_Branch, EX_RegDst, EX_MemtoReg,  // EX Control Signals
          EX_MemRead, EX_MemWrite, EX_ALUSrc;
@@ -231,7 +232,9 @@ input clk, reset;
 
             EX_pc4      <= ID_pc4;
             EX_extend   <= ID_extend;
+            EX_rs       <= ID_rs; /// added
             EX_rt       <= ID_rt;
+            EX_rt2      <= ID_rt; /// added
             EX_rd       <= ID_rd;
         end
     end
@@ -257,18 +260,24 @@ input clk, reset;
     // branch offset shifter
     assign EX_offset = EX_extend << 2;
 
-    assign EX_funct = EX_extend[5:0];  
+    assign EX_funct = EX_extend[5:0];  // ALU control signal
 
     add32 		EX_BRADD(EX_pc4, EX_offset, EX_btgt);
 
-    mux2 #(32) 	ALUMUX(EX_ALUSrc, EX_rd2, EX_extend, EX_alub);
+    mux2 #(32) 	ALUMUX(EX_ALUSrc, EX_FWDB_MUX_out, EX_extend, EX_alub); /// changed EX_rd2 to EX_FWDB_MUX_out
 
-    alu 		EX_ALU(EX_Operation, EX_rd1, EX_alub, EX_ALUOut, EX_Zero);
+    alu 		EX_ALU(EX_Operation, EX_FWDA_MUX_out, EX_alub, EX_ALUOut, EX_Zero); /// changed EX_rd1 to EX_FWDA_MUX_out
 
     mux2 #(5) 	EX_RFMUX(EX_RegDst, EX_rt, EX_rd, EX_RegRd);
-
+    
+    mux3 #(32) FWDA_MUX(ForwardA, EX_rd1, WB_wd, MEM_ALUOut, EX_FWDA_MUX_out); /// forwarding to rd1
+    
+    mux3 #(32) FWDB_MUX(ForwardB, EX_rd2, WB_wd, MEM_ALUOut, EX_FWDB_MUX_out); /// forwarding to rd2
+    
     alu_ctl 	EX_ALUCTL(EX_ALUOp, EX_funct, EX_Operation);
-
+    
+    fwd_unit EX_FWDUNIT(.IDEX_Rs(EX_rs), .IDEX_Rt(EX_rt2), .EXMEM_Rd(MEM_RegRd), .EXMEM_WB(MEM_RegWrite), .MEMWB_Rd(WB_RegRd), .MEMWB_WB(WB_RegWrite), .ForwardA(ForwardA), .ForwardB(ForwardB));
+    
     always @(posedge clk)		    // EX/MEM Pipeline Register
     begin
         if (reset)
@@ -295,7 +304,7 @@ input clk, reset;
 
             MEM_btgt     <= EX_btgt;
             MEM_ALUOut   <= EX_ALUOut;
-            MEM_rd2      <= EX_rd2;
+            MEM_rd2      <= EX_FWDB_MUX_out; /// changed from EX_rd2 to EX_FWDB_MUX_out
             MEM_RegRd    <= EX_RegRd;
         end
     end
