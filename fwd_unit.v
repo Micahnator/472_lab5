@@ -27,7 +27,7 @@ module fwd_unit(IDEX_Rs, IDEX_Rt, EXMEM_Rd, EXMEM_WB, MEMWB_Rd, MEMWB_WB, Forwar
     && (EXMEM_Rd == IDEX_Rs))
   begin
     assign ForwardA = 2'b10;
-    $display($time, " forwarding to A (EX hazard)");
+    $display($time, " forwarding prior ALU result to A (EX hazard)");
   end
   
   if((EXMEM_WB == 1'b1)
@@ -35,7 +35,7 @@ module fwd_unit(IDEX_Rs, IDEX_Rt, EXMEM_Rd, EXMEM_WB, MEMWB_Rd, MEMWB_WB, Forwar
     && (EXMEM_Rd == IDEX_Rt))
   begin
     assign ForwardB = 2'b10;
-    $display($time, " forwarding to B (EX hazard)");
+    $display($time, " forwarding prior ALU result to B (EX hazard)");
   end
   
   /// MEM hazard
@@ -45,7 +45,7 @@ module fwd_unit(IDEX_Rs, IDEX_Rt, EXMEM_Rd, EXMEM_WB, MEMWB_Rd, MEMWB_WB, Forwar
     && (MEMWB_Rd == IDEX_Rs))
   begin
     assign ForwardA = 2'b01;
-    $display($time, " forwarding to A (Mem hazard)");
+    $display($time, " forwarding from data mem to A (Mem hazard)");
   end
 
   if ((MEMWB_WB == 1'b1)
@@ -54,7 +54,7 @@ module fwd_unit(IDEX_Rs, IDEX_Rt, EXMEM_Rd, EXMEM_WB, MEMWB_Rd, MEMWB_WB, Forwar
     && (MEMWB_Rd == IDEX_Rt))
   begin
     assign ForwardB = 2'b01;
-    $display($time, " forwarding to B (Mem hazard)");
+    $display($time, " forwarding from data mem to B (Mem hazard)");
   end
   end
 endmodule

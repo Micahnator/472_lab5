@@ -201,6 +201,8 @@ input clk, reset;
             EX_MemtoReg <= 0;
 
             EX_pc4      <= 0;
+            EX_rd1      <= 0; /// added
+            EX_rd2      <= 0; /// added
             EX_extend   <= 0;
             EX_rt       <= 0;
             EX_rd       <= 0;
@@ -216,6 +218,8 @@ input clk, reset;
             EX_MemtoReg <= 0;
             
             EX_pc4      <= ID_pc4;
+            EX_rd1      <= ID_rd1; /// added
+            EX_rd2      <= ID_rd2; /// added
             EX_extend   <= ID_extend;
             EX_rt       <= ID_rt;
             EX_rd       <= ID_rd;
@@ -231,6 +235,8 @@ input clk, reset;
             EX_MemtoReg <= ID_MemtoReg_2;
 
             EX_pc4      <= ID_pc4;
+            EX_rd1      <= ID_rd1; /// added
+            EX_rd2      <= ID_rd2; /// added
             EX_extend   <= ID_extend;
             EX_rs       <= ID_rs; /// added
             EX_rt       <= ID_rt;
