@@ -204,6 +204,8 @@ input clk, reset;
             EX_extend   <= 0;
             EX_rt       <= 0;
             EX_rd       <= 0;
+			EX_rt2		<= 0;
+			EX_rs		<= 0;
         end
         else if (ID_Write == 0) begin
             EX_RegDst   <= 0;
@@ -212,13 +214,13 @@ input clk, reset;
             EX_Branch   <= 0;
             EX_MemRead  <= 0;
             EX_MemWrite <= 0;
-            EX_RegWrite <= 0;
+            //EX_RegWrite <= 0;
             EX_MemtoReg <= 0;
             
             EX_pc4      <= ID_pc4;
             EX_extend   <= ID_extend;
-            EX_rt       <= ID_rt;
-            EX_rd       <= ID_rd;
+           // EX_rt       <= ID_rt;
+          //  EX_rd       <= ID_rd;
         end        
         else begin
             EX_RegDst   <= ID_RegDst_2;
@@ -227,15 +229,15 @@ input clk, reset;
             EX_Branch   <= ID_Branch_2;
             EX_MemRead  <= ID_MemRead_2;
             EX_MemWrite <= ID_MemWrite_2;
-            EX_RegWrite <= ID_RegWrite_2;
+            //EX_RegWrite <= ID_RegWrite_2;
             EX_MemtoReg <= ID_MemtoReg_2;
 
             EX_pc4      <= ID_pc4;
             EX_extend   <= ID_extend;
-            EX_rs       <= ID_rs; /// added
-            EX_rt       <= ID_rt;
-            EX_rt2      <= ID_rt; /// added
-            EX_rd       <= ID_rd;
+            //EX_rs       <= ID_rs; /// added
+            //EX_rt       <= ID_rt;
+           // EX_rt2      <= ID_rt; /// added
+           // EX_rd       <= ID_rd;
         end
     end
     
@@ -244,12 +246,24 @@ input clk, reset;
     begin
         if (reset)
         begin
+			EX_RegWrite <= 0;
+			
             EX_rd1      <= 0;
             EX_rd2      <= 0;
+			EX_rt		<= 0;
+			EX_rt2		<= 0;
+			EX_rd		<= 0;
+			EX_rs		<= 0;
         end       
         else begin
+			EX_RegWrite <= ID_RegWrite_2;
+		
             EX_rd1      <= ID_rd1;
             EX_rd2      <= ID_rd2;
+			EX_rt		<= ID_rt;
+			EX_rt2		<= ID_rt;
+			EX_rd		<= ID_rd;
+			EX_rs		<= ID_rs;
         end
     end
 
@@ -285,7 +299,7 @@ input clk, reset;
             MEM_Branch   <= 0;
             MEM_MemRead  <= 0;
             MEM_MemWrite <= 0;
-            MEM_RegWrite <= 0;
+           // MEM_RegWrite <= 0;
             MEM_MemtoReg <= 0;
             MEM_Zero     <= 0;
 
@@ -297,18 +311,40 @@ input clk, reset;
         else begin
             MEM_Branch   <= EX_Branch;
             MEM_MemRead  <= EX_MemRead;
-            MEM_MemWrite <= EX_MemWrite;
+           // MEM_MemWrite <= EX_MemWrite;
             MEM_RegWrite <= EX_RegWrite;
             MEM_MemtoReg <= EX_MemtoReg;
             MEM_Zero     <= EX_Zero;
 
             MEM_btgt     <= EX_btgt;
+            //MEM_ALUOut   <= EX_ALUOut;
+           // MEM_rd2      <= EX_FWDB_MUX_out; /// changed from EX_rd2 to EX_FWDB_MUX_out
+           // MEM_RegRd    <= EX_RegRd;
+        end
+    end
+	
+	always @(negedge clk)
+    begin
+        if (reset)
+        begin
+			MEM_MemWrite <= 0;
+			
+            EX_rd1      <= 0;
+            EX_rd2      <= 0;
+			EX_rt		<= 0;
+			EX_rt2		<= 0;
+			EX_rd		<= 0;
+			EX_rs		<= 0;
+        end       
+        else begin
+			MEM_MemWrite <= EX_MemWrite;
+			
             MEM_ALUOut   <= EX_ALUOut;
             MEM_rd2      <= EX_FWDB_MUX_out; /// changed from EX_rd2 to EX_FWDB_MUX_out
             MEM_RegRd    <= EX_RegRd;
         end
     end
-
+	
     // ********************************************************************
     //                              MEM Stage
     // ********************************************************************
@@ -317,7 +353,7 @@ input clk, reset;
 
     and  		MEM_BR_AND(MEM_PCSrc, MEM_Branch, MEM_Zero);
 
-    always @(posedge clk)		// MEM/WB Pipeline Register
+    always @(negedge clk)		// MEM/WB Pipeline Register
     begin
         if (reset)
         begin
