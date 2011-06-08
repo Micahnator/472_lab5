@@ -45,7 +45,7 @@ module rom32(address, data_out);
           5'd14 : data_out = 32'b0; // no-op after branch
           5'd15 : data_out = 32'b0; // no-op after branch
           5'd16 : data_out = { 6'd43, 5'd0, 5'd5, 16'd0 };             // MEM[0] = $5
-          5'd17 : data_out = { 6'd4, 5'd0, 5'd0, -16'd18 };            // beq $0, $0, -18 restart loop at word 3
+          5'd17 : data_out = { 6'd4, 5'd0, 5'd0, -16'd15 };            // beq $0, $0, -18 restart loop at word 3
           // add more cases here as desired
           default data_out = 32'hxxxx;
       endcase
