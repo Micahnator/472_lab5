@@ -1,0 +1,3 @@
+module forwarding_unit(IFID_Rs, IFID_Rt, EXMEM_Rd, EXMEM_WB, MEMWB_Rd, MEMWB_WB, ForwardA, ForwardB);
+  
+endmodule
