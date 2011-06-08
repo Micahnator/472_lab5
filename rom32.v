@@ -32,7 +32,7 @@ module rom32(address, data_out);
          // 5'd4 : data_out = 0; // no-op to stall until add is done
          // 5'd5 : data_out = 0; // no-op to stall until add is done
          // 5'd6 : data_out = 0; // no-op to stall until add is done
-          5'd4 : data_out = { 6'd0, 5'd5, 5'd2, 5'd5, 5'd0, 6'd32 };  // add $5, $5, $1  r5 = r6 + 1
+          5'd4 : data_out = { 6'd0, 5'd5, 5'd2, 5'd5, 5'd0, 6'd32 };  // add $5, $5, $2  r5 = r5 + 1
           5'd5 : data_out = 0; // no-op to stall until add is done
           5'd6 : data_out = 0; // no-op to stall until add is done
           5'd7 : data_out = 0; // no-op to stall until add is done                              

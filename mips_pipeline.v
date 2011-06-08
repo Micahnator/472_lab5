@@ -201,9 +201,9 @@ input clk, reset;
 
     mux2 #(5) 	EX_RFMUX(EX_RegDst, EX_rt, EX_rd, EX_RegRd);
     
-    mux3 #(32) FWDA_MUX(ForwardA, EX_rd1, MEM_ALUOut, WB_wd, EX_FWDA_MUX_out); /// forwarding to rd1
+    mux3 #(32) FWDA_MUX(ForwardA, EX_rd1, WB_wd, MEM_ALUOut, EX_FWDA_MUX_out); /// forwarding to rd1
     
-    mux3 #(32) FWDB_MUX(ForwardB, EX_rd2, MEM_ALUOut, WB_wd, EX_FWDB_MUX_out); /// forwarding to rd2
+    mux3 #(32) FWDB_MUX(ForwardB, EX_rd2, WB_wd, MEM_ALUOut, EX_FWDB_MUX_out); /// forwarding to rd2
     
     alu_ctl 	EX_ALUCTL(EX_ALUOp, EX_funct, EX_Operation);
     

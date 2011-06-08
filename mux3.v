@@ -6,9 +6,8 @@ module mux3( sel, a, b, c, y );
     
     wire [bitwidth-1:0] x;
     
-    assign y = a;
-    // mux2 #(bitwidth) M1(sel[0], a, c, x);
-    // mux2 #(bitwidth) M2(sel[1], x, b, y);
+    mux2 #(bitwidth) M1(sel[1], a, c, x);
+    mux2 #(bitwidth) M2(sel[0], x, b, y);
     
     // 00 = a
     // 01 = b
